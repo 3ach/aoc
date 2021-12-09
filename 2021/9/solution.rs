@@ -30,11 +30,12 @@ fn part1(heights: &Vec<Vec<u32>>) -> u32 {
     return risk;
 }
 
-fn remap(map: &mut Vec<Vec<i32>>, left: i32, upper: i32, new: i32) {
+fn remap(map: &mut Vec<Vec<Option<usize>>>, left: usize, upper: usize, new: usize) {
     for row in 0..map.len() {
         for col in 0..map[0].len() {
-            if map[row][col] == left || map[row][col] == upper {
-                map[row][col] = new;
+            match map[row][col] {
+                Some(basin) if basin == left || basin == upper => map[row][col] = Some(new),
+                _ => {}
             }
         }
     }
@@ -44,7 +45,7 @@ fn remap(map: &mut Vec<Vec<i32>>, left: i32, upper: i32, new: i32) {
 
 fn part2(heights: &Vec<Vec<u32>>) -> usize {
     let mut basins: Vec<usize> = vec![];
-    let mut map: Vec<Vec<i32>> = heights.iter().map(|row| row.iter().map(|_| -1).collect()).collect();
+    let mut map: Vec<Vec<Option<usize>>> = heights.iter().map(|row| row.iter().map(|_| None).collect()).collect();
 
     for row in 0..heights.len() {
         for col in 0..heights[0].len() {
@@ -52,41 +53,41 @@ fn part2(heights: &Vec<Vec<u32>>) -> usize {
                 continue;
             }
 
-            let mut left_basin: Option<i32> = None;
-            let mut upper_basin: Option<i32> = None;
+            let mut left_basin: Option<usize> = None;
+            let mut upper_basin: Option<usize> = None;
 
-            if row > 0 && map[row - 1][col] != -1 {
-                upper_basin = Some(map[row - 1][col]);
+            if row > 0 {
+                upper_basin = map[row - 1][col];
             }
 
-            if col > 0 && map[row][col - 1] != -1 {
-                left_basin = Some(map[row][col - 1]);
+            if col > 0 {
+                left_basin = map[row][col - 1];
             }
 
             match (left_basin, upper_basin) {
                 (Some(left), Some(upper)) if left != upper => {
-                    let combined = basins[left as usize] + basins[upper as usize] + 1;
-                    let new = basins.len().try_into().unwrap();
+                    let combined = basins[left] + basins[upper as usize] + 1;
+                    let new = basins.len();
 
                     remap(&mut map, left, upper, new);
 
-                    basins[left as usize] = 0;
-                    basins[upper as usize] = 0;
+                    basins[left] = 0;
+                    basins[upper] = 0;
                     basins.push(combined);
-                    map[row][col] = new;
+                    map[row][col] = Some(new);
                 },
                 (Some(left), Some(upper)) if left == upper => {
-                    map[row][col] = left.try_into().unwrap();
+                    map[row][col] = Some(left);
                     basins[left as usize] += 1;
                 }
                 (Some(basin), None) | (None, Some(basin)) => {
-                    map[row][col] = basin.try_into().unwrap();
-                    basins[basin as usize] += 1;
+                    map[row][col] = Some(basin);
+                    basins[basin] += 1;
                 },
                 (None, None) => {
-                    let new = basins.len().try_into().unwrap();
+                    let new = basins.len();
                     basins.push(1);
-                    map[row][col] = new;
+                    map[row][col] = Some(new);
                 },
                 _ => panic!()
             }
