@@ -37,19 +37,21 @@ fn adjacent_occupied(layout: &Vec<Vec<Position>>, point: (usize, usize)) -> u8 {
 fn visible_occupied(layout: &Vec<Vec<Position>>, point: (usize, usize)) -> u8 {
     let (row, col) = point;
 
+    //println!("Checking [{}][{}] for visible occupied", row, col);
     let mut occupied = 0;
-    for r in (-1 as isize)..1 {
-        for c in (-1 as isize)..1 {
-            println!("Checking [{}][{}] at vector [{}][{}]", row, col, r, c);
+    for r in (-1 as isize)..=1 {
+        for c in (-1 as isize)..=1 {
+            //kprintln!("Checking vector [{}][{}]", r, c);
             if (r, c) == (0, 0) {
                 continue
             }
 
-            'dir: loop {
-                let mut scalar = 1;
-                
+            let mut scalar = 1;
+            loop {
                 let r_scaled = row as isize + (r * scalar);
                 let c_scaled = col as isize + (c * scalar);
+
+                //println!("\t Scalar {} ->  [{}][{}]", scalar, r_scaled, c_scaled);
 
                 if r_scaled < 0 || r_scaled >= layout.len() as isize {
                     break
@@ -62,8 +64,6 @@ fn visible_occupied(layout: &Vec<Vec<Position>>, point: (usize, usize)) -> u8 {
                 let r_scaled: usize = r_scaled as usize;
                 let c_scaled: usize = c_scaled as usize;
 
-                println!("Scalar {}, [{}][{}]", scalar, r_scaled, c_scaled);
-                
                 match layout[r_scaled][c_scaled] {
                     Position::Occupied => {
                         occupied += 1;
@@ -135,7 +135,7 @@ fn part2(layout: &Vec<Vec<Position>>) -> u16 {
 
                 match seat {
                     Position::Empty if adjacent == 0 => changes.push((row, col)),
-                    Position::Occupied if adjacent >= 4 => changes.push((row, col)),
+                    Position::Occupied if adjacent >= 5 => changes.push((row, col)),
                     _ => continue,
                 }
             }
@@ -163,6 +163,19 @@ fn part2(layout: &Vec<Vec<Position>>) -> u16 {
             }
         }).sum::<u16>()
     }).sum();
+}
+
+fn print_layout(layout: &Vec<Vec<Position>>) {
+    for row in 0..layout.len() {
+        for col in 0..layout[0].len() {
+            match layout[row][col] {
+                Position::Empty => print!("L"),
+                Position::Floor => print!("."),
+                Position::Occupied => print!("#"),
+            }
+        }
+        print!("\n");
+    }
 }
 
 fn main() -> io::Result<()> {
