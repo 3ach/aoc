@@ -40,14 +40,14 @@ fn part2(points: &HashSet<Point>, folds: &Vec<Fold>) {
         points = fold(&mut points, f);
     }
 
-    let xmax = points.iter().map(|(x, y)| x).max().unwrap();
-    let ymax = points.iter().map(|(x, y)| y).max().unwrap();
+    let xmax = points.iter().map(|(x, y)| y).max().unwrap();
+    let ymax = points.iter().map(|(x, y)| x).max().unwrap();
 
     for x in 0..=*xmax {
         for y in 0..=*ymax {
-            match points.get(&(x, y)) {
+            match points.get(&(y, x)) {
                 Some(_) => print!("#"),
-                None => print!("."),
+                None => print!(" "),
             }
         }
         println!("");
