@@ -19,16 +19,11 @@ fn part2(depths: &Vec<i32>) -> i32 {
 	}
 
 	let mut increases = 0;
-	let mut window = depths[0] + depths[1] + depths[2];
 	
 	for range in 3..depths.len() {
-		let next_window = window + depths[range] - depths[range - 3];
-
-		if next_window > window {
-			increases += 1;
-		}
-
-		window = nextWindow;
+        if depths[range] > depths[range - 3] {
+            increases += 1;
+        }
 	}
 
 	return increases;
