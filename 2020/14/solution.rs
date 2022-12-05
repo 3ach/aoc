@@ -1,104 +1,120 @@
+<<<<<<< HEAD
 use std::io;
 use std::io::BufRead;
 use std::collections::HashMap;
 use std::convert::Into;
 use std::convert::From;
 
-#[derive(Clone,Copy,Debug)]
-struct Mask {
-    ones: u64,
-    zeroes: u64,
-    floating: u64
-}
-
-#[derive(Clone,Debug)]
+#[derive(Debug, Clone, Copy)]
 enum Instruction {
-    SetMask(Mask),
-    SetMem(usize, u64),
+    Mask { high: u64, low: u64, floating: u64 },
+    Set { address: u64, value: u64 }
 }
+ 
+fn part1(program: &[Instruction]) -> u64 {
+    let mut mem = HashMap::new();
+    let mut mask: Instruction = Instruction::Mask { high: 0, low: !0, floating: 0 };
 
-type Program = Vec<Instruction>;
-
-impl From<String> for Mask {
-    fn from(input: String) -> Self {
-        let mut mask = Mask{
-            ones: 0, 
-            zeroes: u64::MAX,
-            floating: 0,
-        };
-
-        for (idx, c) in input.chars().enumerate() {
-            let bit = 35 - idx;
-            match c {
-                '0' => mask.zeroes &= !(0x1 << bit),
-                '1' => mask.ones |= (0x1 << bit), 
-                'X' => mask.floating |= (0x1 << bit), 
-                _ => continue
+    for instruction in program {
+        match instruction {
+            Instruction::Mask{..} => { mask = *instruction; },
+            Instruction::Set{address, value} => {
+                if let Instruction::Mask { high, low , .. } = mask {
+                    let real_value = (value & low) | high;
+                    mem.insert(address, real_value);
+                }
             }
         }
-
-        return mask;
     }
+
+    mem.values().sum()
 }
 
-
-fn part1(program: &Program) -> u64 {
-    let mut memory: HashMap<usize, u64> = HashMap::new();
-    let mut mask: Mask = Mask{ones: 0, zeroes: 0, floating: 0};
+fn part2(program: &[Instruction]) -> u64 {
+    let mut mem = HashMap::new();
+    let mut mask: Instruction = Instruction::Mask { high: 0, low: !0, floating: 0 };
+    let mut permutations = 1;
+    let mut floating_idxs = vec![];
 
     for instruction in program {
         match instruction {
-            Instruction::SetMask(m) => mask = *m,
-            Instruction::SetMem(address, value) => {
-                memory.insert(*address, (value & mask.zeroes) | mask.ones);
+            Instruction::Mask{floating, ..} => { 
+                let mut floating = *floating;
+
+                mask = *instruction; 
+                permutations = 1;
+                floating_idxs = vec![];
+                for idx in 0..36 {
+                    if floating % 2 == 1 {
+                        floating_idxs.push(idx);
+                        permutations *= 2;
+                    }
+
+                    floating /= 2;
+                }
             },
-        }
-    }
+            Instruction::Set{address, value} => {
+                if let Instruction::Mask { high, low , floating } = mask {
+                    let mut addresses = vec![];
 
-    return memory.values().sum();
-}
+                    for mut permutation in 0..permutations {
+                        let mut permuted_address = address | high;
+                        for idx in &floating_idxs {
+                            let bit = permutation % 2;
+                            if bit == 0 {
+                                permuted_address &= !(1 << idx); 
+                            } else {
+                                permuted_address |= 1 << idx; 
+                            }
+                            permutation /= 2;
+                        }
 
-fn part2(program: &Program) -> u64 {
-    let mut memory: HashMap<usize, u64> = HashMap::new();
-    let mut mask: Mask = Mask{ones: 0, zeroes: 0, floating: 0};
-
-    for instruction in program {
-        match instruction {
-            Instruction::SetMask(m) => mask = *m,
-            Instruction::SetMem(address, value) => {
-                println!("address expansion of address {}", address);
-                let mut addresses = vec![(*address as u64 & mask.zeroes) | mask.ones];
-                println!("\t seed {:?}", addresses);
-                for bit in 0..36 {
-                    if (0x1 << bit) & mask.floating != 0x0 {
-                        addresses = addresses.iter().cloned().flat_map(|address| [address | (0x1 << bit), address & !(0x1 << bit)]).collect();
+                        addresses.push(permuted_address);
+                    }
+                   
+                    for address in addresses {
+                        mem.insert(address, *value);
                     }
                 }
-
-                println!("Writing to {:?}", addresses);
-            },
+            }
         }
     }
 
-    return memory.values().sum();
+    mem.values().sum()
 }
 
 fn main() -> io::Result<()> {
     let stdin = io::stdin();
     let reader = stdin.lock();
 
-    let program: Program = reader.lines().map(|line| {
-        let line = line.unwrap();
-        let parts: Vec<&str>  = line.split(" = ").collect();
+    let program: Vec<Instruction> = reader.lines().map(|line| {
+        let line = line.expect("Couldn't read stdin");
+        let parts = line.split_once(" = ").unwrap();
+        if parts.0 == "mask" {
+            let mut high = 0u64;
+            let mut low = 0u64;
+            let mut floating = 0u64;
+            let mut mask = parts.1.chars(); 
 
-        match parts[0] {
-            "mask" => Instruction::SetMask(String::from(parts[1]).into()),
-            _ => {
-                let address = parts[0][4..parts[0].len()-1].parse().unwrap();
-                let value = parts[1].parse().unwrap();
+            while let Some(bit) = mask.next() {
+                high <<= 1;
+                low <<= 1;
+                floating <<= 1;
 
-                Instruction::SetMem(address, value)
+                match bit {
+                    'X' => floating += 1,
+                    '0' => low += 1, 
+                    '1' => high += 1,
+                    _ => panic!(),
+                }
             }
+
+            return Instruction::Mask { high: high, low: !low, floating: floating };
+        } else {
+            let address: u64 = parts.0[4..parts.0.len()-1].parse().unwrap();
+            let value: u64 = parts.1.parse().unwrap();
+
+            return Instruction::Set { address, value };
         }
     }).collect();
 
