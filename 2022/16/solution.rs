@@ -1,6 +1,6 @@
 use std::cmp;
 use std::collections::HashMap;
-use std::collections::BTreeSet;
+use std::collections::HashSet;
 use std::io;
 use std::io::BufRead;
 
@@ -15,7 +15,8 @@ struct Step<'a> {
     current: &'a str,
     released: u32,
     minute: u32,
-    opened: BTreeSet<String>,
+    opened: HashSet<String>,
+    path: String,
 }
 
 type TInput = HashMap<String, Valve>;
@@ -104,28 +105,43 @@ fn shortests(valves: &mut TInput) {
     }
 }
 
-fn next<'a>(mut step: Step<'a>, valves: &'a TInput, time: u32) -> Vec<Step<'a>> {
+fn next<'a>(mut step: Step<'a>, valves: &'a TInput, time: u32, who: String) -> Vec<Step<'a>> {
     let mut next = vec![];
     let valve = &valves[step.current];
-    step.opened.insert(step.current.to_string());
-
-    if valve.flow_rate > 0 {
-        step.minute += 1;
+    if step.current != "AA" && !step.opened.insert(step.current.to_string()) {
+	return vec![];
     }
 
+    if valve.flow_rate > 0 {
+	step.released += (time - step.minute) * valve.flow_rate;
+        step.minute += 1;
+	step.path.push('F');
+	next.push(Step {
+                current: step.current.clone(),
+                released: step.released,
+                minute: step.minute,
+                opened: step.opened.clone(),
+		path: step.path.clone(),
+	});
+    } 
+
+
     for (neighbor, distance) in &valve.neighbors {
-        if !step.opened.contains(neighbor) && step.minute + distance + 1 < time {
+		
+        if !step.opened.contains(neighbor) && step.minute + distance < time {
             let neighbor_valve = &valves[neighbor];
+	    let mut path = step.path.clone();
+            path.push_str(&format!("{}{}", neighbor, step.minute));
 
             next.push(Step {
                 current: neighbor,
-                released: step.released
-                    + ((time - step.minute - distance) * neighbor_valve.flow_rate),
+                released: step.released,
                 minute: step.minute + distance,
                 opened: step.opened.clone(),
+		path: path.clone(),
             });
-	}
     }
+	}
 
     next
 }
@@ -138,15 +154,15 @@ fn part1(input: &TInput) -> u32 {
         current: "AA",
         released: 0,
         minute: 1,
-        opened: BTreeSet::new(),
+        opened: HashSet::new(),
+	    path: "".to_string(), 
     });
-
     while let Some(step) = stack.pop() {
         if step.released >= max {
             max = step.released;
         }
 
-        for next in next(step, input, 30) {
+        for next in next(step, input, 30, "".to_string()) {
             stack.push(next);
         }
     }
@@ -155,45 +171,56 @@ fn part1(input: &TInput) -> u32 {
 }
 
 fn part2(input: &TInput) -> u32 {
-    return 0;
     let mut stack = vec![];
     let mut max = 0;
+    let mut c = 0;
+    let mut s = 0;
+    let mut explored = HashSet::new();
 
     stack.push((
         Step {
             current: "AA",
             released: 0,
             minute: 1,
-            opened: BTreeSet::from(["AA".to_string()]),
+            opened: HashSet::from(["AA".to_string()]),
+	    path: "H".to_string(),
         },
         Step {
             current: "AA",
             released: 0,
             minute: 1,
-            opened: BTreeSet::from(["AA".to_string()]),
+            opened: HashSet::from(["AA".to_string()]),
+	    path: "E".to_string(),
         },
     ));
-
+	
     while let Some((human, elephant)) = stack.pop() {
-	//println!("{:?}", (&human, &elephant));
-	//println!("{:#?}", stack);
-        if elephant.released + human.released >= max {
-            max = elephant.released + human.released;
+	c += 1;
+	let released = elephant.released + human.released;
+        if released >= max {
+           max = elephant.released + human.released;
         }
 
-        for next in next(human.clone(), input, 26) {
+	let wholepath = format!("{}{}", human.path, elephant.path);
+	if !explored.insert(wholepath.clone()) {
+		s += 1;
+		continue;
+	}
+	
+        for next in next(human.clone(), input, 26, "H".to_string()) {
             let mut elephant = elephant.clone();
             elephant.opened = next.opened.clone();
             stack.push((next, elephant));
         }
 
-        for next in next(elephant.clone(), input, 26) {
+        for next in next(elephant.clone(), input, 26, "E".to_string()) {
             let mut human = human.clone();
             human.opened = next.opened.clone();
             stack.push((human, next));
         }
 
     }
+    println!("Checked {} possible solutions, skipped {}", c, s);
 
     max
 }
