@@ -196,17 +196,34 @@ fn part2(input: &TInput) -> u32 {
 	
     while let Some((human, elephant)) = stack.pop() {
 	c += 1;
+
+	if c % 1000000 == 0  {
+		println!("Checked {} so far, and skipped {}.", c, s);
+	}
 	let released = elephant.released + human.released;
         if released >= max {
            max = elephant.released + human.released;
         }
+	let unopened: HashSet<_> = input.keys()
+		.filter(|k| !human.opened.contains(k.as_str()) & !elephant.opened.contains(k.as_str()))
+		.collect();
+
+	let potential: u32 = unopened.iter()
+		.map(|v| input[v.as_str()].flow_rate * (25 - cmp::min(human.minute, elephant.minute)))
+		.sum();
+
+	if potential + released < max {
+		s += 1;
+		continue;
+	}
+
 
 	let wholepath = format!("{}{}", human.path, elephant.path);
 	if !explored.insert(wholepath.clone()) {
 		s += 1;
 		continue;
 	}
-	
+
         for next in next(human.clone(), input, 26, "H".to_string()) {
             let mut elephant = elephant.clone();
             elephant.opened = next.opened.clone();

@@ -14,17 +14,33 @@ struct Tile {
 
 impl fmt::Debug for Tile {
 	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-		write!(f, "Tile: {}\n\n", self.id);
+		write!(f, "Tile: {}\n\n", self.id)?;
 		for row in self.image {
 			for px in row {
-				write!(f, "{}", if px { "#" } else { "." });
+				write!(f, "{}", if px { "#" } else { "." })?;
 			}
-			write!(f, "\n");
+			write!(f, "\n")?;
 		}
 		Ok(())
 	}
 }
 
+fn coalesce(arrangement: &HashMap<(usize, usize), Tile>) -> HashMap<(usize, usize), bool> {
+	arrangement.iter()
+		.map(|((pcol, prow), panel)| 
+			panel.image.iter()
+				.enumerate()
+				.map(|(py, row)| 
+					row.iter()
+						.enumerate()
+						.map(|(px, pixel)| ((((10 * pcol) + px) - pcol, 				
+											 ((10 * prow) + py) - prow), *pixel))
+						.collect::<Vec<((usize, usize), bool)>>()
+				).flatten()
+				.collect::<Vec<((usize, usize), bool)>>()
+		).flatten()
+		.collect()
+}
 
 fn edges(tile: &Tile) -> HashSet<Vec<bool>> {
     let mut edges = HashSet::new();
@@ -44,6 +60,25 @@ fn edges(tile: &Tile) -> HashSet<Vec<bool>> {
     edges
 }
 
+fn rotations(tile: &Tile) -> Vec<Tile> {
+	let mut rots = vec![];
+	let mut current = tile.clone();
+
+	for _ in 0..4 {
+		rots.push(current.clone());
+		rotate(&mut current);
+	}
+
+	let mut flipped = rots.iter()
+		.cloned()
+		.map(|mut rot| { flip(&mut rot); rot })
+		.collect();
+
+	rots.append(&mut flipped);
+
+	rots
+}
+
 fn rotate(tile: &mut Tile) {
 	let mut image = [[false; 10]; 10];
 
@@ -57,7 +92,7 @@ fn rotate(tile: &mut Tile) {
 } 
 
 fn flip(tile: &mut Tile) {
-	for mut row in &mut tile.image {
+	for row in &mut tile.image {
 		row.reverse();
 	}
 } 
@@ -71,86 +106,74 @@ fn arrange(tiles: &TInput) -> HashMap<(usize, usize), Tile> {
 		entry.push(edge.1);
 		set
 	}).iter()
-	.filter(|(k, v)| v.len() > 1)
+	.filter(|(_, v)| v.len() > 1)
 	.map(|(k, v)| (k.clone(), v.clone()))
 	.collect();
 	
-    let mut origin = tiles.iter()
+    let origin = tiles.iter()
         .filter(|tile| tile.edges
                 .intersection(&edgemap.keys().cloned().collect())
                 .count() == 4)
         .next()
         .unwrap()
 	.clone();
-	
-	let mut top: Vec<bool> = origin.image[0].to_vec();
-	let mut left: Vec<bool> = origin.image.iter().cloned().map(|r| r[0]).collect();
 
-	while edgemap.contains_key(&top) || edgemap.contains_key(&left) {
-	    rotate(&mut origin);
-	    top = origin.image[0].to_vec();
-	    left = origin.image.iter().cloned().map(|r| r[0]).collect();
-	}
+	let origin = rotations(&origin)
+		.iter()
+		.filter(|origin| {
+			let top: Vec<bool> = origin.image[0].to_vec();
+			let left: Vec<bool> = origin.image.iter().cloned().map(|r| r[0]).collect();
+
+			!edgemap.contains_key(&top) && !edgemap.contains_key(&left)
+		})
+		.next()
+		.unwrap()
+		.clone();
 
     let mut arranged = HashMap::new();  
     arranged.insert((0, 0), origin);
 
     let side = (tiles.len() as f64).sqrt() as usize;
     for row in 0..side {
-	if row > 0 {
-		let above = arranged.get(&(row - 1, 0)).unwrap();
-		let bottom = above.image[9].to_vec();
-		let mut below = edgemap.get(&bottom).unwrap().iter().filter(|t| t.id != above.id).next().unwrap().clone();
-		let mut tries = 0;
-		loop {
-			if tries == 4 {
-				flip(&mut below);
-			}
+		if row > 0 {
+			let above = arranged.get(&(0, row - 1)).unwrap();
+			let bottom = above.image[9].to_vec();
+			let next = edgemap.get(&bottom)
+						.unwrap()
+						.iter()
+						.filter(|tile| tile.id != above.id)
+						.next()
+						.unwrap();
 
-			let left = below.image.iter().map(|r| r[0]).collect::<Vec<bool>>();
-			let top = below.image[0].to_vec();
+			let next = rotations(next)
+				.iter()
+				.filter(|tile| tile.image[0].to_vec() == bottom)
+				.next()
+				.unwrap()
+				.clone();
 
-			if !edgemap.contains_key(&left) && top == bottom {
-				break;
-			} else {
-				rotate(&mut below);
-			}
-
-			tries += 1;
+			arranged.insert((0, row), next);
 		}
-		
-		arranged.insert((row, 0), below);
-	}
 
         for col in 0..side-1 {
-            if let Some(tile) = arranged.get(&(row, col)) {
-		let right = tile.image.iter().map(|r| r[r.len() - 1]).collect::<Vec<bool>>();
-		let mut next = edgemap.get(&right.to_vec()).unwrap().iter().filter(|t| t.id != tile.id).next().unwrap().clone();
-		let above = if row > 0 { Some(arranged.get(&(row - 1, col + 1)).unwrap().image[9]) } else { None };
-		let mut tries = 0;
-		loop {
-			if tries == 4 {
-				flip(&mut next);
-			} if tries > 10 {
-				panic!();
-			}
+			let current = arranged.get(&(col, row)).unwrap();
+			let right: Vec<bool> = current.image.iter().map(|r| r[9]).collect();
 
-			let top = next.image[0].to_vec();
-			let left = next.image.iter().map(|r| r[0]).collect::<Vec<bool>>();
+			let next = edgemap.get(&right)
+						.unwrap()
+						.iter()
+						.filter(|tile| tile.id != current.id)
+						.next()
+						.unwrap();
 
-			match above {
-				None if left == right && !edgemap.contains_key(&top) => break,
-				None => rotate(&mut next),
-				Some(above) if left == right && top == above => break,
-				Some(_) => rotate(&mut next),
-			}
-			tries += 1;
-		}
+			let next = rotations(next)
+				.iter()
+				.filter(|tile| tile.image.iter().map(|r| r[0]).collect::<Vec<bool>>() == right)
+				.next()
+				.unwrap()
+				.clone();
 
-		arranged.insert((row, col + 1), next);
-            } else {
-                panic!("Can't find neighbors of unplaced tile! ({}, {})", row, col);
-            }
+			arranged.insert((col + 1, row), next);
         }
     }
 
@@ -159,17 +182,31 @@ fn arrange(tiles: &TInput) -> HashMap<(usize, usize), Tile> {
 
 fn part1(tiles: &TInput) -> u64 {
 	let side = (tiles.len() as f64).sqrt() as usize;
-	let mut tiles = tiles.clone();
+	let tiles = tiles.clone();
    	let arrangement = arrange(&tiles);
 
 	arrangement.iter()
-		.filter(|((row, _), tile)| *row == 0 || *row == side - 1)
-		.filter(|((_, col), tile)| *col == 0 || *col == side - 1)
+		.filter(|((row, _), _)| *row == 0 || *row == side - 1)
+		.filter(|((_, col), _)| *col == 0 || *col == side - 1)
 		.map(|(_, tile)| tile.id)
 		.product()
 }
 
 fn part2(tiles: &TInput) -> u64 {
+	let mut side = (tiles.len() as f64).sqrt() as usize;
+	side = (side * 10) - side;
+
+	let tiles = tiles.clone();
+   	let arrangement = arrange(&tiles);
+	let image = coalesce(&arrangement);
+
+	for row in 1..side {
+		for col in 1..side {
+			let pixel = *image.get(&(col, row)).unwrap();
+			print!("{}", if pixel { "#" } else { "." });
+		}
+		println!("");
+	}
     0
 }
 
