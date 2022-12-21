@@ -105,32 +105,30 @@ fn shortests(valves: &mut TInput) {
     }
 }
 
-fn next<'a>(mut step: Step<'a>, valves: &'a TInput, time: u32, who: String) -> Vec<Step<'a>> {
+fn next<'a>(mut step: Step<'a>, valves: &'a TInput, time: u32) -> Vec<Step<'a>> {
     let mut next = vec![];
     let valve = &valves[step.current];
     if step.current != "AA" && !step.opened.insert(step.current.to_string()) {
-	return vec![];
+        return vec![];
     }
 
     if valve.flow_rate > 0 {
-	step.released += (time - step.minute) * valve.flow_rate;
+        step.released += (time - step.minute) * valve.flow_rate;
         step.minute += 1;
-	step.path.push('F');
-	next.push(Step {
-                current: step.current.clone(),
-                released: step.released,
-                minute: step.minute,
-                opened: step.opened.clone(),
-		path: step.path.clone(),
-	});
-    } 
-
+        step.path.push('F');
+        next.push(Step {
+            current: step.current.clone(),
+            released: step.released,
+            minute: step.minute,
+            opened: step.opened.clone(),
+            path: step.path.clone(),
+        });
+    }
 
     for (neighbor, distance) in &valve.neighbors {
-		
         if !step.opened.contains(neighbor) && step.minute + distance < time {
             let neighbor_valve = &valves[neighbor];
-	    let mut path = step.path.clone();
+            let mut path = step.path.clone();
             path.push_str(&format!("{}{}", neighbor, step.minute));
 
             next.push(Step {
@@ -138,10 +136,10 @@ fn next<'a>(mut step: Step<'a>, valves: &'a TInput, time: u32, who: String) -> V
                 released: step.released,
                 minute: step.minute + distance,
                 opened: step.opened.clone(),
-		path: path.clone(),
+                path: path.clone(),
             });
+        }
     }
-	}
 
     next
 }
@@ -155,14 +153,14 @@ fn part1(input: &TInput) -> u32 {
         released: 0,
         minute: 1,
         opened: HashSet::new(),
-	    path: "".to_string(), 
+        path: "".to_string(),
     });
     while let Some(step) = stack.pop() {
         if step.released >= max {
             max = step.released;
         }
 
-        for next in next(step, input, 30, "".to_string()) {
+        for next in next(step, input, 30) {
             stack.push(next);
         }
     }
@@ -183,59 +181,61 @@ fn part2(input: &TInput) -> u32 {
             released: 0,
             minute: 1,
             opened: HashSet::from(["AA".to_string()]),
-	    path: "H".to_string(),
+            path: "H".to_string(),
         },
         Step {
             current: "AA",
             released: 0,
             minute: 1,
             opened: HashSet::from(["AA".to_string()]),
-	    path: "E".to_string(),
+            path: "E".to_string(),
         },
     ));
-	
+
     while let Some((human, elephant)) = stack.pop() {
-	c += 1;
+        c += 1;
 
-	if c % 1000000 == 0  {
-		println!("Checked {} so far, and skipped {}.", c, s);
-	}
-	let released = elephant.released + human.released;
-        if released >= max {
-           max = elephant.released + human.released;
+        if c % 1000000 == 0 {
+            println!("Checked {} so far, and skipped {}.", c, s);
         }
-	let unopened: HashSet<_> = input.keys()
-		.filter(|k| !human.opened.contains(k.as_str()) & !elephant.opened.contains(k.as_str()))
-		.collect();
+        let released = elephant.released + human.released;
+        if released >= max {
+            max = elephant.released + human.released;
+        }
+        let unopened: HashSet<_> = input
+            .keys()
+            .filter(|k| !human.opened.contains(k.as_str()) & !elephant.opened.contains(k.as_str()))
+            .collect();
 
-	let potential: u32 = unopened.iter()
-		.map(|v| input[v.as_str()].flow_rate * (25 - cmp::min(human.minute, elephant.minute)))
-		.sum();
+        let potential: u32 = unopened
+            .iter()
+            .map(|v| {
+                input[v.as_str()].flow_rate * (26 - cmp::min(human.minute, elephant.minute) - 1)
+            })
+            .sum();
 
-	if potential + released < max {
-		s += 1;
-		continue;
-	}
+        if potential + released < max {
+            s += 1;
+            continue;
+        }
 
+        let wholepath = format!("{}{}", human.path, elephant.path);
+        if !explored.insert(wholepath) {
+            s += 1;
+            continue;
+        }
 
-	let wholepath = format!("{}{}", human.path, elephant.path);
-	if !explored.insert(wholepath.clone()) {
-		s += 1;
-		continue;
-	}
-
-        for next in next(human.clone(), input, 26, "H".to_string()) {
+        for next in next(human.clone(), input, 26) {
             let mut elephant = elephant.clone();
             elephant.opened = next.opened.clone();
             stack.push((next, elephant));
         }
 
-        for next in next(elephant.clone(), input, 26, "E".to_string()) {
+        for next in next(elephant.clone(), input, 26) {
             let mut human = human.clone();
             human.opened = next.opened.clone();
             stack.push((human, next));
         }
-
     }
     println!("Checked {} possible solutions, skipped {}", c, s);
 
