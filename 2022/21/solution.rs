@@ -82,7 +82,7 @@ fn part2(input: &TInput) -> i64 {
         .collect();
 
     let mut current = "root".to_string();
-    let mut carry = 0;
+    let mut carry: i64 = 0;
 
     loop {
 	if current == "humn" { return carry; }
@@ -97,12 +97,16 @@ fn part2(input: &TInput) -> i64 {
 		_ => panic!(),
 		};
 
-	    carry = match op  {
-		Op::Eq => resolved,
-		Op::Add => carry - resolved,
-		Op::Subtract => carry + resolved,
-		Op::Multiply => carry / resolved,
-		Op::Divide => carry * resolved,
+	    //print!("At node {:?}, carry: {} -> ", monkey, carry);
+
+	    carry = match (op, left) {
+		(Op::Eq, _) => resolved,
+		(Op::Add, _) => carry - resolved,
+		(Op::Subtract, Some(_)) => resolved - carry,
+		(Op::Subtract, None)  => carry + resolved,
+		(Op::Multiply, _) => carry / resolved,
+		(Op::Divide, None) => carry * resolved,
+		(Op::Divide, Some(_)) => resolved / carry,
 	    };
 
             current = unresolved.to_string();
