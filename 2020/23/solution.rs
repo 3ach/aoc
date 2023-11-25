@@ -1,23 +1,83 @@
+use std::io::BufRead;
 use std::io;
-use std::ops::RangeInclusive;
-use std::collections::HashMap;
 
-fn part1(input: &mut [usize; 9]) -> usize {
-    let mut pos = 8;
-    
-    for mov in 1..2 {
-        let current = input[pos];
-        let cups = [input[current], input[input[current]], input[input[input[current]]]];
-        println!("{:?}", input);
-        println!("{:?}", current);
-        println!("{:?}", cups);
+fn print(layout: &[usize]) {
+    let mut cursor = layout[layout.len() - 1];
+    let mut printed = 0;
+
+    print!("{} ", cursor + 1);
+
+    while printed < 12 {
+        cursor = layout[cursor];
+        print!("{} ", cursor + 1);
+        printed += 1;
     }
 
+    println!("");
+}
+
+fn round(layout: &mut [usize], crab_idx: usize) {
+    let crab = crab_idx + 1;
+
+    let next_idx = layout[crab_idx];
+    let next = next_idx + 1;
+
+    let plus1_idx = layout[next_idx];
+    let plus1 = plus1_idx + 1;
+
+    let plus2_idx = layout[plus1_idx];
+    let plus2 = plus2_idx + 1;
+    
+    let plus3_idx = layout[plus2_idx];
+
+    let mut destination = if crab > 1 { crab - 1 } else { layout.len() };
+    while destination == next || destination == plus1 || destination == plus2 {
+        destination = if destination > 1 { destination - 1 } else { layout.len() };
+    }
+    
+    let destination_idx = destination - 1;
+    let destination_neighbor_idx = layout[destination_idx];
+
+    layout[crab_idx] = plus3_idx;
+    layout[destination_idx] = next_idx;
+    layout[plus2_idx] = destination_neighbor_idx;
+/*
+    println!("crab: {} @ {}", crab,  crab_idx);
+    println!("next: {} @ {}", next,  next_idx);
+    println!("plus1: {} @ {}", plus1,  plus1_idx);
+    println!("plus2: {} @ {}", plus2,  plus2_idx);
+    println!("destination: {} @ {}", destination, destination_idx);
+    println!("destination neighbor: {} @ {}", destination_neighbor_idx + 1,  destination_neighbor_idx);
+    println!("{:?}", layout);
+
+    print(layout);
+*/
+}
+
+fn part1(layout: &mut [usize], start: usize) -> i64 {
+    let mut start = start;
+    for r in 0..100 {
+        round(layout, start);
+        start = layout[start];
+    }
+    print(layout);
     0
 }
 
-fn part2() -> usize {
-    0
+fn part2(layout: &mut [usize], start: usize) -> u64 {
+    let mut start = start;
+    for r in 0..10000000 {
+        round(layout, start);
+        start = layout[start];
+    }
+
+    let next_idx = layout[0];
+    let next = next_idx + 1;
+
+    let plus1_idx = layout[next_idx];
+    let plus1 = plus1_idx + 1;
+
+    plus1 as u64 * next as u64
 }
 
 fn main() -> io::Result<()> {
