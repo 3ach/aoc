@@ -1,6 +1,7 @@
 *.swp
 **/test*
 **/demo*
+**/out*
 **/solution
 **/input*
 **/target/**
