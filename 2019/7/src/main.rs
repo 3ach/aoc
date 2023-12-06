@@ -3,7 +3,7 @@ use intcode::{enter, init, run, Program};
 use std::io;
 use std::io::BufRead;
 
-fn part1(program: &Program) -> i32 {
+fn part1(program: &Program) -> i64 {
     let mut max = 0;
     let mut sequence = vec![0, 0, 0, 0, 0];
 
@@ -52,7 +52,7 @@ fn part1(program: &Program) -> i32 {
     max
 }
 
-fn part2(program: &Program) -> i32 {
+fn part2(program: &Program) -> i64 {
     let mut max = 0;
     let mut sequence = vec![0, 0, 0, 0, 0];
 
@@ -77,13 +77,13 @@ fn part2(program: &Program) -> i32 {
                             continue;
                         }
 
-                        let mut amplifier_a = &mut init(&program, &[]);
-                        let mut amplifier_b = &mut init(&program, &[]);
-                        let mut amplifier_c = &mut init(&program, &[]);
-                        let mut amplifier_d = &mut init(&program, &[]);
-                        let mut amplifier_e = &mut init(&program, &[]);
+                        let mut amplifier_a = &mut init(&program, &[a]);
+                        let mut amplifier_b = &mut init(&program, &[b]);
+                        let mut amplifier_c = &mut init(&program, &[c]);
+                        let mut amplifier_d = &mut init(&program, &[d]);
+                        let mut amplifier_e = &mut init(&program, &[e]);
 
-                        println!("{:?}", [a, b, c, d, e]);
+                        //println!("{:?}", [a, b, c, d, e]);
                         
                         let mut signal = 0;
 
@@ -91,19 +91,19 @@ fn part2(program: &Program) -> i32 {
                             let mut out = vec![];
                             let mut done = false;
 
-                            (_, out, amplifier_a) = enter(amplifier_a, &[a, signal]);
+                            (_, out, amplifier_a) = enter(amplifier_a, &[signal]);
                             signal = out.pop().unwrap();
 
-                            (_, out, amplifier_b) = enter(amplifier_b, &[b, signal]);
+                            (_, out, amplifier_b) = enter(amplifier_b, &[signal]);
                             signal = out.pop().unwrap();
 
-                            (_, out, amplifier_c) = enter(amplifier_c, &[c, signal]);
+                            (_, out, amplifier_c) = enter(amplifier_c, &[signal]);
                             signal = out.pop().unwrap();
 
-                            (_, out, amplifier_d) = enter(amplifier_d, &[d, signal]);
+                            (_, out, amplifier_d) = enter(amplifier_d, &[signal]);
                             signal = out.pop().unwrap();
 
-                            (done, out, amplifier_e) = enter(amplifier_e, &[e, signal]);
+                            (done, out, amplifier_e) = enter(amplifier_e, &[signal]);
                             signal = out.pop().unwrap();
 
                             if done {
@@ -133,12 +133,12 @@ fn main() -> io::Result<()> {
 
         buf.trim()
             .split(",")
-            .map(|n| n.parse::<i32>().unwrap())
-            .collect::<Vec<i32>>()
+            .map(|n| n.parse::<i64>().unwrap())
+            .collect::<Vec<i64>>()
     };
 
-    let answer1 = part1(&program);
-    println!("Part 1: {}", answer1);
+    //let answer1 = part1(&program);
+    //println!("Part 1: {}", answer1);
 
     let answer2 = part2(&program);
     println!("Part 2: {}", answer2);
