@@ -1,6 +1,4 @@
-use adventage::day;
-use std::io;
-use std::io::BufRead;
+use adventage;
 
 fn part1(input: &str) -> i32 {
     input
@@ -29,7 +27,7 @@ fn part2(input: &str) -> u32 {
     panic!();
 }
 
-#[day]
+#[adventage::day]
 fn parse() -> String {
-    input.next().unwrap()
+    input.lines().next().unwrap()
 }
