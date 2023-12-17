@@ -1,4 +1,4 @@
-use adventage::day;
+use adventage::{part1demo, part2demo, day};
 use std::collections::HashMap;
 use std::collections::BinaryHeap;
 use std::cmp::Reverse;
@@ -39,14 +39,11 @@ fn crucible(map: &HashMap<Point, u32>, min: i32, max: i32) -> u32 {
     let mut lr_seen: HashMap<Point, u32> = HashMap::new();
 
     next.push(Reverse((0u32, (0, 0), vec![Direction::Up, Direction::Down, Direction::Left, Direction::Right])));
-    let mut necessary = 0;
-    let mut unnecessary = 0;
 
     while let Some(Reverse((loss, pt, allowed))) = next.pop() {
         if allowed[0] == Direction::Left {
             if let Some(prev) = lr_seen.get(&pt) {
                 if *prev <= loss {
-                    unnecessary += 1;
                     continue;
                 }
             }
@@ -54,17 +51,13 @@ fn crucible(map: &HashMap<Point, u32>, min: i32, max: i32) -> u32 {
         } else if allowed[0] == Direction::Up {
             if let Some(prev) = ud_seen.get(&pt) {
                 if *prev <= loss {
-                    unnecessary += 1;
                     continue;
                 }
             }
             ud_seen.insert(pt, loss);
         }
 
-        necessary += 1;
-
         if pt == (row_max, col_max) {
-            println!("{} necessary, {} unnecessary", necessary, unnecessary);
             return loss;
         }
 
@@ -120,8 +113,9 @@ fn crucible(map: &HashMap<Point, u32>, min: i32, max: i32) -> u32 {
     }
     panic!();
 }
-/*
-part1demo!(r"2413432311323
+
+part1demo!(
+"2413432311323
 3215453535623
 3255245654254
 3446585845452
@@ -134,45 +128,20 @@ part1demo!(r"2413432311323
 1224686865563
 2546548887735
 4322674655533", 102);
-*/
+
+part2demo!(
+"2413432311323
+3215453535623
+3255245654254
+3446585845452
+4546657867536
+1438598798454
+4457876987766
+3637877979653
+4654967986887
+4564679986453
+1224686865563
+2546548887735
+4322674655533", 94);
+
 day!(2023, 17);
-
-    #[test] 
-    fn pt1_ex1() {
-        let input = r"2413432311323
-3215453535623
-3255245654254
-3446585845452
-4546657867536
-1438598798454
-4457876987766
-3637877979653
-4654967986887
-4564679986453
-1224686865563
-2546548887735
-4322674655533";
-        let parsed = parse(input);
-        let answer = part1(&parsed);
-        assert_eq!(102, answer);
-    }
-
-    #[test] 
-    fn pt2_ex1() {
-        let input = r"2413432311323
-3215453535623
-3255245654254
-3446585845452
-4546657867536
-1438598798454
-4457876987766
-3637877979653
-4654967986887
-4564679986453
-1224686865563
-2546548887735
-4322674655533";
-        let parsed = parse(input);
-        let answer = part2(&parsed);
-        assert_eq!(94, answer);
-    }
