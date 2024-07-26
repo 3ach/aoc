@@ -1,7 +1,7 @@
 
 pub type Program = Vec<i64>;
-#[derive(Debug)]
 
+#[derive(Debug, Clone)]
 pub struct Execution {
     ip: usize,
     base: i64,
@@ -247,12 +247,12 @@ fn interp(mut execution: &mut Execution) {
     }
 }
 
-pub fn enter<'a, 'b>(execution: &'a mut Execution, input: &'b [i64]) -> (bool, Vec<i64>, &'a mut Execution) {
+pub fn enter<'a, 'b>(execution: &'a mut Execution, input: &'b [i64]) -> (bool, Vec<i64>) {
     assert!(!execution.halted);
     execution.input.extend_from_slice(input);
     interp(execution);
 
-    (execution.halted, execution.output.drain(0..).collect(), execution)
+    (execution.halted, execution.output.drain(0..).collect())
 }
 
 pub fn init(program: &Program, input: &[i64]) -> Execution {
