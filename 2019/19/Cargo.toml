@@ -1,0 +1,8 @@
+[package]
+name = "solution"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+adventage = "0.2.1"
+intcode = { version = "0.1.0", path = "../intcode" }
