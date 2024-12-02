@@ -4,7 +4,7 @@ use std::collections::HashSet;
 
 enum Number {
     Part(u32, char, (usize, usize), (i32, i32)),
-    Nonpart(u32)
+    Nonpart
 }
 
 fn part1(parts: &[Number]) -> u32 {
@@ -115,7 +115,7 @@ fn main() -> io::Result<()> {
             } else if let Some(parsed) = number {
                 let part = match symbol {
                     Some((symbol, location)) => Number::Part(parsed, symbol, start.unwrap(), location),
-                    None => Number::Nonpart(parsed)
+                    None => Number::Nonpart
                 };
                 
                 parts.push(part);

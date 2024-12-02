@@ -82,7 +82,6 @@ const MAX_VELOCITY: i128 = 1000;
 
 fn part2(particles: &Vec<Particle>) -> i128 {
     let mut velocity_candidates: (Option<HashSet<i128>>, Option<HashSet<i128>>, Option<HashSet<i128>>) = (None, None, None);
-    let mut position_candidates: (Option<HashSet<i128>>, Option<HashSet<i128>>, Option<HashSet<i128>>) = (None, None, None);
 
     for a in particles {
         for b in particles {

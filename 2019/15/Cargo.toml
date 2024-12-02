@@ -1,10 +1,10 @@
 [package]
-name = "solution"
+name = "aoc-2019-15"
 version = "0.1.0"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-adventage = "0.2.1"
+adventage = "0.3.0"
 intcode = { version = "0.1.0", path = "../intcode" }

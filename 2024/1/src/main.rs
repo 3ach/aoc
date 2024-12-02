@@ -36,8 +36,8 @@ fn part1(lists: &TInput) -> u32 {
 }
 
 fn part2(lists: &TInput) -> u32 {
-    let mut left: Vec<u32> = lists.iter().map(|l| l[0]).collect();
-    let mut right: Vec<u32> = lists.iter().map(|l| l[1]).collect();
+    let left: Vec<u32> = lists.iter().map(|l| l[0]).collect();
+    let right: Vec<u32> = lists.iter().map(|l| l[1]).collect();
 
     left.iter().map(|l| (right.iter().filter(|v| *v == l).count() as u32) * *l).sum()
 }

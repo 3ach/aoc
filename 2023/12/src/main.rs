@@ -1,4 +1,3 @@
-use std::collections::HashSet;
 use std::io;
 use std::io::BufRead;
 use std::collections::HashMap;
@@ -10,6 +9,7 @@ enum Spring {
     Damaged,
 }
 
+/* 
 fn print_row(row: &[Spring]) {
     for spring in row {
         match spring {
@@ -19,6 +19,7 @@ fn print_row(row: &[Spring]) {
         }
     }
 }
+*/
 
 fn can_slot(row: &[Spring], contiguous: usize, starting: usize) -> bool {
     if starting > 0 && row[starting - 1] == Spring::Damaged {
@@ -76,7 +77,6 @@ fn possibilities<'a>(row: &'a [Spring], groups: &'a[usize], mut memo: &mut HashM
 }
 
 fn part2(input: &[(Vec<Spring>, Vec<usize>)]) -> usize {
-    let total = input.len();
     input
         .iter()
         .map(|(row, groups)| {

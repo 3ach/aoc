@@ -1,5 +1,5 @@
 [package]
-name = "solution"
+name = "aoc-2023-17"
 version = "0.1.0"
 edition = "2021"
 
@@ -9,4 +9,4 @@ edition = "2021"
 debug = true
 
 [dependencies]
-adventage = { version = "0.1.0", path = "../../../adventage/adventage" }
+adventage = "0.3.0"

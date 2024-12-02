@@ -33,22 +33,17 @@ fn parse(input: &str) -> TInput {
         .collect()
 }
 
-fn valid(report: &Vec<i32>) -> bool {
+fn valid(report: &[i32]) -> bool {
     let differences = report.windows(2).map(|w| w[1] - w[0]).collect::<Vec<i32>>();
 
-    if differences.iter().all(|diff| *diff > 0 && *diff <= 3) {
-        true
-    } else if differences.iter().all(|diff| *diff < 0 && *diff >= -3) {
-        true
-    } else {
-        false
-    }
+    differences.iter().all(|diff| *diff > 0 && *diff <= 3)
+        || differences.iter().all(|diff| *diff < 0 && *diff >= -3)
 }
 
-fn one_removed(report: &Vec<i32>) -> Vec<Vec<i32>> {
+fn one_removed(report: &[i32]) -> Vec<Vec<i32>> {
     (0..report.len())
         .map(|idx| {
-            let mut dampened = report.clone();
+            let mut dampened = report.to_owned();
             dampened.remove(idx);
             dampened
         })

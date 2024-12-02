@@ -1,9 +1,9 @@
 [package]
-name = "solution"
+name = "aoc-2015-3"
 version = "0.1.0"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-adventage = { version = "0.1.0", path = "../../../adventage/adventage" }
+adventage = "0.3.0"

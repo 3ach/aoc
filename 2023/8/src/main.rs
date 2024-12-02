@@ -3,7 +3,6 @@ use std::collections::HashMap;
 use std::io;
 use std::io::BufRead;
 
-type Input = [String];
 type Direction = String;
 
 struct Node {

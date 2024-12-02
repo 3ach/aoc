@@ -82,7 +82,7 @@ fn main() -> io::Result<()> {
         .flatten()
         .collect::<HashSet<(usize, usize)>>();
 
-    let mut starmap = Starmap {
+    let starmap = Starmap {
         rows,
         cols,
         galaxies,

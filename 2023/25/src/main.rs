@@ -1,4 +1,4 @@
-use adventage::{part1demo, part2demo, day};
+use adventage::{part1demo, day};
 use std::collections::HashSet;
 use std::collections::HashMap;
 use std::collections::VecDeque;

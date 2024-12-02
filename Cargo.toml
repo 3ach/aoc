@@ -1,0 +1,8 @@
+[workspace]
+
+members = [
+    "2023/*",
+    "2024/*",
+]
+
+resolver = "2"
