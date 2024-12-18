@@ -261,6 +261,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "aoc-2024-18"
+version = "0.1.0"
+dependencies = [
+ "adventage 0.3.0",
+]
+
+[[package]]
 name = "aoc-2024-2"
 version = "0.1.0"
 dependencies = [
