@@ -13,7 +13,20 @@ ubwu
 bwurrg
 brgr
 bbrgwb",
-6
+    6
+);
+part2demo!(
+    "r, wr, b, g, bwu, rb, gb, br
+
+brwrr
+bggr
+gbbr
+rrbgbr
+ubwu
+bwurrg
+brgr
+bbrgwb",
+    6
 );
 
 type TInput = (Vec<String>, Vec<String>);
@@ -39,7 +52,8 @@ fn ways(goal: &str, patterns: &Vec<String>, mut seen: &mut HashMap<String, usize
         return *prev;
     }
 
-    let from_here = patterns.iter()
+    let from_here = patterns
+        .iter()
         .filter(|pattern| goal.starts_with(*pattern))
         .map(|pattern| {
             let (_, rest) = goal.split_at(pattern.len());
@@ -48,7 +62,8 @@ fn ways(goal: &str, patterns: &Vec<String>, mut seen: &mut HashMap<String, usize
             } else {
                 ways(rest, patterns, &mut seen)
             }
-    }).sum();
+        })
+        .sum();
 
     seen.insert(goal.to_string(), from_here);
 
