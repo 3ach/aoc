@@ -58,6 +58,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "aoc-2019-18"
+version = "0.1.0"
+dependencies = [
+ "adventage 0.3.0",
+]
+
+[[package]]
 name = "aoc-2023-1"
 version = "0.1.0"
 dependencies = [
@@ -369,6 +376,27 @@ dependencies = [
 
 [[package]]
 name = "aoc-2024-9"
+version = "0.1.0"
+dependencies = [
+ "adventage 0.3.0",
+]
+
+[[package]]
+name = "aoc-2025-1"
+version = "0.1.0"
+dependencies = [
+ "adventage 0.3.0",
+]
+
+[[package]]
+name = "aoc-2025-2"
+version = "0.1.0"
+dependencies = [
+ "adventage 0.3.0",
+]
+
+[[package]]
+name = "aoc-2025-3"
 version = "0.1.0"
 dependencies = [
  "adventage 0.3.0",
