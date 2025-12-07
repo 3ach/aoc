@@ -73,7 +73,6 @@ fn part1(homework: &TInput) -> u64 {
         .enumerate()
         .map(|(idx, operator)| {
             let terms = homework.terms.iter().map(|row| &row[idx]);
-            let tvec = terms.clone().collect::<Vec<_>>();
             match operator {
                 Operator::Add => terms.fold(0, |sum, term| sum + term.trim().parse::<u64>().unwrap()),
                 Operator::Multiply => terms.fold(1, |product, term| product * term.trim().parse::<u64>().unwrap()),
