@@ -1,0 +1,8 @@
+[package]
+name = "aoc-2025-10"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+adventage = "0.4.0"
+good_lp = { version = "1.14.2", features = ["highs"], default-features=false }
