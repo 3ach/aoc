@@ -1,7 +1,8 @@
+use adventage::day;
 use std::collections::HashSet;
-use std::io::BufRead;
-use std::io;
 use std::str::FromStr;
+
+day!(2019, 3);
 
 #[derive(Debug)]
 enum Step {
@@ -52,6 +53,12 @@ fn points(path: &Path) -> Vec<Point> {
     locs
 }
 
+fn parse(input: &str) -> TInput {
+    input.lines()
+        .map(|line| line.split(',').map(|step| step.parse().expect("Couldn't parse")).collect())
+        .collect()
+}
+
 fn part1(input: &TInput) -> isize {
     input.iter()
         .map(|path| points(path).iter().cloned().collect::<HashSet<Point>>())
@@ -76,22 +83,4 @@ fn part2(input: &TInput) -> isize {
              .sum::<isize>())
         .min()
         .unwrap() + (2 as isize)
-}
-
-fn main() -> io::Result<()> {
-    let stdin = io::stdin();
-    let reader = stdin.lock();
-
-    let input: TInput = reader.lines()
-        .map(|line| line.expect("Couldn't read stdin"))
-        .map(|line| line.split(',').map(|step| step.parse().expect("Couldn't parse")).collect())
-        .collect();
-
-	let answer1 = part1(&input);
-	let answer2 = part2(&input);
-
-	println!("Answer 1: {}", answer1);
-	println!("Answer 2: {}", answer2);
-
-    Ok(())
 }

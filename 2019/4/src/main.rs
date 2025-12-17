@@ -1,10 +1,18 @@
-use std::io::BufRead;
-use std::io;
+use adventage::day;
 use std::ops::RangeInclusive;
 
+day!(2019, 4);
 
 type TInput = RangeInclusive<u32>;
 
+fn parse(input: &str) -> TInput {
+    let parts: Vec<u32> = input.lines()
+        .map(|line| line.split('-').map(|num| num.parse::<u32>().unwrap()).collect())
+        .next()
+        .unwrap();
+
+    parts[0]..=parts[1]
+}
 
 fn part1(input: &TInput) -> usize {
     input
@@ -66,25 +74,4 @@ fn part2(input: &TInput) -> u32 {
             }
         })
         .sum()
-}
-
-fn main() -> io::Result<()> {
-    let stdin = io::stdin();
-    let reader = stdin.lock();
-
-    let range: Vec<u32> = reader.lines()
-        .map(|line| line.expect("Couldn't read stdin"))
-        .map(|line| line.split('-').map(|num| num.parse::<u32>().unwrap()).collect())
-        .next()
-        .unwrap();
-
-    let input = range[0]..=range[1];
-
-	let answer1 = part1(&input);
-	let answer2 = part2(&input);
-
-	println!("Answer 1: {}", answer1);
-	println!("Answer 2: {}", answer2);
-
-    Ok(())
 }
