@@ -153,6 +153,9 @@ version = "0.1.0"
 [[package]]
 name = "aoc-2019-20"
 version = "0.1.0"
+dependencies = [
+ "adventage 0.4.0",
+]
 
 [[package]]
 name = "aoc-2019-3"
