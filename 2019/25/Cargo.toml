@@ -1,0 +1,8 @@
+[package]
+name = "aoc-2019-25"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+adventage = "0.4.0"
+intcode = { version = "0.1.0", path = "../intcode" }
