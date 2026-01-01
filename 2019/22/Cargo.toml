@@ -5,3 +5,5 @@ edition = "2024"
 
 [dependencies]
 adventage = "0.4.0"
+mod_exp = "1.0.1"
+modinverse = "0.1.1"

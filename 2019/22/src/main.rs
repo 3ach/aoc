@@ -1,11 +1,13 @@
 use adventage::day;
+use modinverse::modinverse;
+use mod_exp::mod_exp;
 
 day!(2019, 22);
 
 enum Operation {
     New,
-    Cut(i64),
-    Deal(i64),
+    Cut(i128),
+    Deal(i128),
 }
 
 type TInput = Vec<Operation>;
@@ -28,39 +30,40 @@ fn parse(input: &str) -> TInput {
         .collect()
 }
 
-fn shuffle(cards: i64, mut interesting: i64, ops: &TInput, rounds: usize) -> i64 {
-    let max = interesting - 1;
-    for _ in 0..rounds {
-        for op in ops {
-            interesting = match op {
-                Operation::New => cards - max,
-                Operation::Cut(top) if *top >= 0 && *top < interesting => {
-                    interesting - top
-                },
-                Operation::Cut(top) if *top >= 0 && *top >= interesting => {
-                    interesting + cards - top
-                },
-                Operation::Cut(top) if *top < 0 && max + *top < interesting => {
-                    interesting + top
-                },
-                Operation::Cut(top) if *top < 0 && max + *top >= interesting => {
-                    interesting - cards + top
-                },
-                Operation::Deal(interval) => {
-                    (interesting * interval) % cards
-                }
-                _ => panic!(),
-            }
+fn coalesce(input: &TInput, card_count: i128) -> (i128, i128) {
+    input.iter().fold((1, 0), |(a, b), rule| {
+        match rule {
+            Operation::New => ((-a).rem_euclid(card_count), -(b + 1).rem_euclid(card_count)),
+            Operation::Cut(d) => (a, (b + card_count - d).rem_euclid(card_count)),
+            Operation::Deal(i) => ((a * i).rem_euclid(card_count), (b * i).rem_euclid(card_count)),
         }
-    }
-
-    interesting
+    })
 }
 
-fn part1(ops: &TInput) -> i64 {
-    shuffle(10007, 2019, ops, 1)
+fn coalesce_inv(input: &TInput, card_count: i128) -> (i128, i128) {
+    input.iter().rev().fold((1, 0), |(a, b), rule| {
+        match rule {
+            Operation::New => ((-a).rem_euclid(card_count), -(b + 1).rem_euclid(card_count)),
+            Operation::Cut(d) => (a, (b + d).rem_euclid(card_count)),
+            Operation::Deal(i) => ((a * modinverse(*i, card_count).unwrap()).rem_euclid(card_count), (b * modinverse(*i, card_count).unwrap()).rem_euclid(card_count)),
+        }
+    })
 }
 
-fn part2(ops: &TInput) -> i64 {
-    shuffle(119315717514047, 2020, ops, 1000000)
+fn part1(ops: &TInput) -> i128 {
+    let (a, b) = coalesce(ops, 10007);
+
+    ((2019 * a) + b).rem_euclid(10007)
+}
+
+fn part2(ops: &TInput) -> i128 {
+    let cards = 119315717514047;
+    let (a, b) = coalesce_inv(ops, cards);
+
+    let times = 101741582076661;
+
+    let first_times = mod_exp(a, times, cards).rem_euclid(cards);
+    let second_times = ((1 - mod_exp(a, times, cards)) * modinverse(1 - a, cards).unwrap()).rem_euclid(cards);
+
+    (2020 * first_times + b * second_times).rem_euclid(cards)
 }
